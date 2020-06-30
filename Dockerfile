@@ -1,6 +1,6 @@
 FROM alpine:3.12.0
 
-# MAINTAINER is deprecated: MAINTAINER PS <psellars@gmail.com>
+LABEL maintainer="matt@msvtechnology.com"
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
@@ -33,7 +33,9 @@ RUN mkdir -p /usr/local/src \
     
 WORKDIR /src
 
-HEALTHCHECK CMD ls index.html
+USER hugo
+
+HEALTHCHECK CMD wget http://localhost:1313
 
 EXPOSE 1313
 

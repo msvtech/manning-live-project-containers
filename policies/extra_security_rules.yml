@@ -1,0 +1,89 @@
+---
+profile:
+  name: "extra Security Rules"
+  description: "Set of extra rules focus on security aspects of Dockerfiles"
+
+required_instructions: 
+    - 
+      instruction: "USER"
+      count: 1
+      level: "error"
+      message: "There is no 'USER' instruction"
+      description: "Ensure there is a USER instruction and that it references a non-root user"
+      reference_url: 
+        - "https://docs.docker.com/reference/builder/"
+        - "#user"
+    
+    - 
+      instruction: "LABEL"
+      count: 1
+      level: "error"
+      message: "There is no 'LABEL' instruction"
+      description: "Ensure there is a LABEL instruction"
+      reference_url: 
+        - "https://docs.docker.com/reference/builder/"
+        - "#label"
+    
+    - 
+      instruction: "HEALTHCHECK"
+      count: 1
+      level: "error"
+      message: "There is no 'HEALTHCHECK' instruction"
+      description: "Ensure there is a HEALTHCHECK instruction and that it does not use CURL"
+      reference_url: 
+        - "https://docs.docker.com/reference/builder/"
+        - "#healthcheck"
+        
+line_rules:
+  
+  FROM:
+    paramSyntaxRegex: /^[a-z0-9./-]+(:[a-z0-9.]+)?$/
+    rules:
+      -
+        label: "is_latest_tag"
+        regex: /latest/
+        level: "error"
+        message: "base image uses 'latest' tag"
+        description: "using the 'latest' tag may cause unpredictable builds. It is recommended that a specific tag is used in the FROM line or *-released which is the latest supported release."
+        reference_url:
+          - "https://docs.docker.com/reference/builder/"
+          - "#from"
+
+  LABEL:
+    paramSyntaxRegex: /.+/
+    rules:
+      -
+        label: "no_maintainer_label"
+        regex: / maintainer=*/
+        inverse_rule: true
+        level: "error"
+        message: "ensure there is a LABEL instruction to set a maintainer"
+        description: "MAINTAINER is deprecated and you should have a LABEL instruction to set the maintainer"
+        reference_url:
+          - "https://docs.docker.com/reference/builder/"
+          - "#maintainer"
+    
+  HEALTHCHECK:
+    paramSyntaxRegex: /.+/
+    rules:
+      -
+        label: "no_curl_healthcheck"
+        regex: / curl */
+        level: "error"
+        message: "HEALTHCHECK should not use curl"
+        description: "Using curl makes the HEALTHCHECK platform specific and adds size to the image"
+        reference_url:
+            -"https://blog.sixeyed.com/docker-healthchecks-why-not-to-use-curl-or-iwr/"
+ 
+  USER:
+    paramSyntaxRegex: /^[a-z0-9./-]+(:[a-z0-9.]+)?$/
+    rules:
+      -
+        label: "no_root_user"
+        regex: /root*/
+        level: "error"
+        message: "USER must be present and reference a non-root User"
+        description: "Using the root user can open security risks"
+        reference_url:
+            -"https://github.com/hadolint/hadolint/wiki/DL3002"
+

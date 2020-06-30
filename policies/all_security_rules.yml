@@ -1,0 +1,7 @@
+---
+profile:
+  name: "All Security Rules"
+  description: "Combined rules from all sources"
+  includes:
+    - security_rules.yml
+    - extra_security_rules.yml
