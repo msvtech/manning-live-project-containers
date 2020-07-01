@@ -9,17 +9,16 @@ required_instructions:
       count: 1
       level: "error"
       message: "There is no 'USER' instruction"
-      description: "Ensure there is a USER instruction and that it references a non-root user"
+      description: "If a USER command is not specified, the container may be running as the root user"
       reference_url: 
         - "https://docs.docker.com/reference/builder/"
         - "#user"
-    
     - 
       instruction: "LABEL"
       count: 1
       level: "error"
       message: "There is no 'LABEL' instruction"
-      description: "Ensure there is a LABEL instruction"
+      description: "Labels help document the purpose and source of a container"
       reference_url: 
         - "https://docs.docker.com/reference/builder/"
         - "#label"
@@ -29,7 +28,7 @@ required_instructions:
       count: 1
       level: "error"
       message: "There is no 'HEALTHCHECK' instruction"
-      description: "Ensure there is a HEALTHCHECK instruction and that it does not use CURL"
+      description: "Healthchecks are required to ensure the container is useable"
       reference_url: 
         - "https://docs.docker.com/reference/builder/"
         - "#healthcheck"
@@ -37,7 +36,7 @@ required_instructions:
 line_rules:
   
   FROM:
-    paramSyntaxRegex: /^[a-z0-9./-]+(:[a-z0-9.]+)?$/
+    paramSyntaxRegex: /^[\w./\-:]+(:[\w.]+)?(-[\w]+)?( as \w+)?$/i
     rules:
       -
         label: "is_latest_tag"
@@ -48,17 +47,33 @@ line_rules:
         reference_url:
           - "https://docs.docker.com/reference/builder/"
           - "#from"
-
+          
+      -
+        label: "no_tag"
+        regex: /^[:]/
+        level: "error"
+        message: "No tag is used"
+        description: "No tag is used. It is recommended that a specific tag is used in the FROM line or *-released which is the latest supported release."
+        reference_url:
+          - "https://docs.docker.com/engine/reference/builder/"
+          - "#from"
+          
   LABEL:
     paramSyntaxRegex: /.+/
-    rules:
-      -
-        label: "no_maintainer_label"
-        regex: / maintainer=*/
-        inverse_rule: true
-        level: "error"
-        message: "ensure there is a LABEL instruction to set a maintainer"
-        description: "MAINTAINER is deprecated and you should have a LABEL instruction to set the maintainer"
+
+    # Use defined_label_rules to define a set of labels for your dockerfile
+
+    # A label value is 'valid' if it matches the regular expression 'valueRegex',
+    # otherwise a warning is logged with the string "message" at level 'level'.
+    # 'reference_url' provides a web link where the user can get more information
+    # about the rule.
+
+    defined_namevals:
+      maintainer:
+        valueRegex: /[\w]+/
+        message: "Label 'maintainer' is missing or has invalid format"
+        level: "warn"
+        required: true
         reference_url:
           - "https://docs.docker.com/reference/builder/"
           - "#maintainer"
@@ -68,22 +83,21 @@ line_rules:
     rules:
       -
         label: "no_curl_healthcheck"
-        regex: / curl */
+        regex: /curl/
         level: "error"
         message: "HEALTHCHECK should not use curl"
         description: "Using curl makes the HEALTHCHECK platform specific and adds size to the image"
         reference_url:
-            -"https://blog.sixeyed.com/docker-healthchecks-why-not-to-use-curl-or-iwr/"
+            - "https://blog.sixeyed.com/docker-healthchecks-why-not-to-use-curl-or-iwr/"
  
   USER:
-    paramSyntaxRegex: /^[a-z0-9./-]+(:[a-z0-9.]+)?$/
+    paramSyntaxRegex: /^[a-z0-9_][a-z0-9_]{0,40}$/
     rules:
       -
-        label: "no_root_user"
-        regex: /root*/
+        label: "root_user"
+        regex: /root|0/
         level: "error"
-        message: "USER must be present and reference a non-root User"
-        description: "Using the root user can open security risks"
+        message: "Running as a root user"
+        description: "Containers should not run as root. Create a separate user instead."        
         reference_url:
-            -"https://github.com/hadolint/hadolint/wiki/DL3002"
-
+            - "https://github.com/hadolint/hadolint/wiki/DL3002"

@@ -31,13 +31,13 @@ RUN mkdir -p /usr/local/src \
     && addgroup -Sg 1000 hugo \
     && adduser -SG hugo -u 1000 -h /src hugo
     
-WORKDIR /src
-
 USER hugo
 
-HEALTHCHECK CMD wget http://localhost:1313
+WORKDIR /src
 
 EXPOSE 1313
+
+HEALTHCHECK CMD wget http://localhost:1313
 
 # ENTRYPOINT ["hugo", "server", "-w", "--bind=0.0.0.0"]
 #    && echo "99c4752bd46c72154ec45336befdf30c28e6a570c3ae7cc237375cf116cba1f8  hugo_${VERSION}_linux-64bit.tar.gz" >> hugo_checksum.txt \

@@ -2,7 +2,7 @@ pwd = D:/sandbox/live-project/docker-container-security-lp
 
 default: all
 
-all: build hado-lint dockerfile-lint build-site clair start health
+all: build hado-lint dockerfile-lint build-site clair start inspect_labels health
 
 build:
 	@echo .
@@ -11,14 +11,14 @@ build:
 	@docker build -t lp/hugo-builder .
 	@echo "Hugo Builder container built!"
 	@docker images lp/hugo-builder
-    
-    
+
+
 hado-lint:
 	@echo .
 	@echo "Running hadolint on Dockerfile..."
-	@docker run --rm -i hadolint/hadolint < Dockerfile
+	@docker run --rm -i hadolint/hadolint:v1.17.5-alpine < Dockerfile
 	@echo "hadolint completed."
-  
+
 dockerfile-lint:
 	@echo .
 	@echo "============================================="
@@ -33,10 +33,9 @@ build-site:
 	@echo $(pwd)
 	@docker run --name hugo-builder --rm -it -d \
     -v $(pwd)/orgdocs:/src/ \
-    -u hugo \
-    lp/hugo-builder hugo        
+    lp/hugo-builder hugo 
 	@echo "OrgDocs Hugo site built!"
-    
+
 
 clair:
 	@echo .
@@ -50,7 +49,6 @@ clair:
 	@echo .
 	@echo "Running clair-scan...."
 	@../clair-scanner -w clair_config/config.yaml --ip 192.168.86.59 lp/hugo-builder
-	@echo "Clair-scan complete!"
 	@echo "Clair-scan complete!"
 	
 	@echo .
@@ -66,7 +64,6 @@ start:
 	@echo $(pwd)
 	@docker run --name hugo-server --rm -it -d \
     -v $(pwd)/orgdocs:/src/ \
-    -u hugo \
     -p 1313:1313 \
     lp/hugo-builder hugo server -w --bind=0.0.0.0
 	@echo "OrgDocs Hugo site is served!"
@@ -78,12 +75,20 @@ health:
 	@echo "Checking health of OrgDocs Hugo site..."
 	@docker inspect --format='{{json .State.Health}}' hugo-server
 	@echo "Health check complete!"
-  
+
+inspect_labels:
+	@echo "Inspecting Hugo Server Container labels..."
+	@echo "maintainer set to..."
+	@docker inspect --format '{{ index .Config.Labels "maintainer" }}' \
+    hugo-server
+	@echo "Labels inspected!"
+
 stop:
 	@echo .
 	@echo "============================================="
 	@echo "Stopping OrgDocs Hugo site..."
 	@docker stop hugo-server
 	@echo "OrgDocs Hugo site stopped!"
-  
-.PHONY: build
+
+.PHONY: build lint con_policies sec_policies policies build \
+	start health stop inspect_labels clair
