@@ -1,0 +1,72 @@
+---
+profile:
+  name: "extra Security Rules"
+  description: "Set of extra rules focus on security aspects of Dockerfiles"
+
+line_rules:
+  
+  LABEL:
+    paramSyntaxRegex: /.+/
+
+    # Use defined_label_rules to define a set of labels for your dockerfile
+
+    # A label value is 'valid' if it matches the regular expression 'valueRegex',
+    # otherwise a warning is logged with the string "message" at level 'level'.
+    # 'reference_url' provides a web link where the user can get more information
+    # about the rule.
+
+    defined_namevals:
+      org.opencontainers.image.created:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.created' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
+      org.opencontainers.image.revision:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.revision' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
+      org.opencontainers.image.version:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.version' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
+      org.opencontainers.image.licenses:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.licenses' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
+      org.opencontainers.image.source:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.source' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
+      org.opencontainers.image.title:
+        valueRegex: /[\w]+/
+        message: "Label 'org.opencontainers.image.title' is missing or has invalid format"
+        level: "warn"
+        required: true
+        reference_url:
+          - "https://github.com/opencontainers/image-spec/blob/master/annotations.md"
+          - "#pre-defined-annotation-keys"
+      
